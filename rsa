@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import math
+import random
+
+def isqrt(n):
+    """
+    Return the integer part of the square root of n.
+    """
+    if n < 0:
+        raise ValueError('square root not defined for negative numbers')
+    if n == 0:
+        return 0
+    a, b = divmod(math.ceil(math.log2(n)), 2)
+    x = 2**(a+b)
+    while True:
+        y = (x + n//x)//2
+        if y >= x:
+            return x
+        x = y
+
+def egcd(a, b):
+    """
+    Return a tuple (g, x, y) such that a*x + b*y = g, where g is the greatest
+    common divisor of a and b.
+    """
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = egcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+def modinv(a, m):
+    """
+    Return the modular inverse of a modulo m, if it exists.
+    """
+    g, x, _ = egcd(a, m)
+    if g != 1:
+        raise ValueError('modular inverse does not exist')
+    else:
+        return x % m
+
+def sieve_primes(n):
+    """
+    Return a list of all prime numbers less than or equal to n.
+    """
+    primes = [2]
+    sieve = [True] * (n//2)
+    for i in range(1, len(sieve)):
+        if sieve[i]:
+            p = 2*i + 1
+            primes.append(p)
+            for j in range(i+p, len(sieve), p):
+                sieve[j] = False
+    return primes
+
+def smoothness_bound(n, m):
+    """
+    Return an upper bound on the largest prime factor of a smooth number of
+    size m that divides n.
+    """
+    return math.exp(math.sqrt(math.log(n) * math.log(math.log(n))) / 2) / m
+
+def find_factors(n):
+    """
+    Find the prime factors of n using the Number Field Sieve algorithm.
+    """
+    # Choose parameters for the algorithm
+    B1 = 10000
+    B2 = 100000
+    m = 7
+
+    # Find smooth numbers using the sieve of Eratosthenes
+    primes = sieve_primes(int(smoothness_bound(n, m)))
+    A = [0] * len(primes)
+    smooth = []
+    i = 1
+    while len(smooth) < m:
+        x = isqrt(n) + i
+        xp = x**2 - n
+        for j, p in enumerate(primes):
+            while xp % p == 0:
+                xp //= p
+                A[j] += 1
+        if xp == 1:
+            smooth.append((x, list(A)))
+        i += 1
+
+    # Use linear algebra to find a non-trivial solution to the system of
+    # equations defining the smooth numbers
+    M = []
+    for _, a in smooth:
+        row = []
+        for j in range(len(primes)):
+            if a[j] % 2 == 1:
+                row.append(0)
+            else:
+                row.append(a[j] // 2
+
